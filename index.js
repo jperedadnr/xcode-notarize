@@ -124,6 +124,7 @@ const submit = async ({productPath, archivePath, primaryBundleId, username, pass
         args.push("--verbose");
     }
 
+    core.info(`[JPL] Notarization starts: get xcrun`);
     let xcrun = execa("xcrun", args, {reject: false});
 
     if (verbose == true) {
@@ -131,6 +132,7 @@ const submit = async ({productPath, archivePath, primaryBundleId, username, pass
         xcrun.stderr.pipe(process.stderr);
     }
 
+    core.info(`[JPL] Notarization starts: call xcrun`);
     const {exitCode, stdout, stderr} = await xcrun;
 
     if (exitCode === undefined) {
@@ -138,9 +140,14 @@ const submit = async ({productPath, archivePath, primaryBundleId, username, pass
         throw Error("Unknown failure - altool did not run at all?");
     }
 
+    core.info(`[JPL] Notarization ended with Exitcode:${exitCode}`);
     if (exitCode !== 0) {
         // TODO Maybe print stderr - see where that ends up in the output? console.log("STDERR", stderr);
+        core.info(`[JPL] Notarization ended with stdout:${stdout}`);
+        core.info(`[JPL] Notarization ended with stderr:${stderr}`);
+    
         const response = JSON.parse(stdout);
+        core.info(`[JPL] Notarization ended with error response:${response}`);
         if (verbose === true) {
             console.log(response);
         }
@@ -152,10 +159,12 @@ const submit = async ({productPath, archivePath, primaryBundleId, username, pass
     }
 
     const response = JSON.parse(stdout);
+    core.info(`[JPL] Notarization ended with response:${response}`);
     if (verbose === true) {
         console.log(response);
     }
 
+    core.info(`[JPL] Notarization ended`);
     return response["notarization-upload"]["RequestUUID"];
 };
 
